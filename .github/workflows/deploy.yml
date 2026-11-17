@@ -1,0 +1,47 @@
+name: CI/CD
+
+# Se ejecuta en cada push o pull request hacia main
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Etapa de integración continua: valida que el código funcione
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Validar sintaxis
+        run: python -m py_compile main.py
+
+      - name: Ejecutar la aplicación
+        run: python main.py
+
+  # Etapa de despliegue continuo: solo corre en push a main y si build pasó
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Desplegar
+        run: |
+          echo "Desplegando la aplicación..."
+          # TODO: reemplaza este paso con tu despliegue real
+          # (por ejemplo: scp/ssh a un servidor, Azure Web Apps, AWS, etc.)
