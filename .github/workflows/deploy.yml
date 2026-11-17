@@ -28,8 +28,12 @@ jobs:
       - name: Validar sintaxis
         run: python -m py_compile main.py
 
-      - name: Ejecutar la aplicación
-        run: python main.py
+      - name: Prueba rápida del servidor
+        run: |
+          # El servidor no termina solo: se inicia en segundo plano y se consulta
+          python main.py &
+          sleep 2
+          curl --fail http://localhost:8000 | grep "Versión desplegada"
 
   # Etapa de despliegue continuo: solo corre en push a main y si build pasó
   deploy:
